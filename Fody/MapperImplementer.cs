@@ -29,12 +29,12 @@ internal static class MapperImplementer
                 var destinationProperty = destinationProperties.FirstOrDefault(p => p.Name == sourceProperty.Name);
                 if (destinationProperty == null)
                 {
-                    Log.Warning("No matching property '{0}.{1}' on type '{2}'.", sourceType, sourceProperty, destinationType);
+                    Log.Warning("No matching property '{0}.{1}' on type '{2}'.", sourceType, sourceProperty.Name, destinationType);
                     continue;
                 }
                 if (sourceProperty.PropertyType != destinationProperty.PropertyType)
                 {
-                    Log.Warning("Property '{0}' on type '{1}' did not match on type '{2}'.", sourceProperty, sourceType, destinationType);
+                    Log.Warning("Property '{0}' on type '{1}' did not match on type '{2}'.", sourceProperty.Name, sourceType, destinationType);
                     continue;
                 }
 

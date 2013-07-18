@@ -1,3 +1,5 @@
-﻿Info[0] = Creating mapping method for 'SimpleSource' in mapping type 'SimpleDestination'.
-Info[1] = Creating mapping type for 'SimpleDestination'.
-Info[2] = Removing reference to 'Atlas'.
+﻿Info[0] = Creating mapping method for 'MissingMatchesSource' in mapping type 'MissingMatchesDestination'.
+Info[1] = Creating mapping method for 'SimpleSource' in mapping type 'SimpleDestination'.
+Info[2] = Creating mapping type for 'MissingMatchesDestination'.
+Info[3] = Creating mapping type for 'SimpleDestination'.
+Info[4] = Removing reference to 'Atlas'.
