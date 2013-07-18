@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{840518BA-C9D3-4D5F-B74E-5D09E85D7895}</ProjectGuid>
+    <OutputPath>$(SolutionDir)NuGetBuild</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  </PropertyGroup>
+  <ItemGroup>
+    <NuSpec Include="Atlas.nuspec" />
+    <Tools Include="install.ps1" />
+    <Tools Include="uninstall.ps1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Fody\Fody.csproj">
+      <Project>{a7914da8-ea9b-45a3-a707-e2f801a5c776}</Project>
+      <Name>Fody</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ReferenceAssembly\ReferenceAssembly.csproj">
+      <Project>{f1e0e6f2-254f-4cfb-93c9-522530231544}</Project>
+      <Name>ReferenceAssembly</Name>
+      <DestinationSubDirectory>lib\portable-net4+sl4+wp7+win8+MonoAndroid16+MonoTouch40\</DestinationSubDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(SolutionDir)\tools\NuGetBuild.targets" />
+</Project>
