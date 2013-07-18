@@ -33,4 +33,9 @@ public static class CecilExtensions
     {
         return method.DeclaringType.Name == typeName && method.Name == methodName;
     }
+
+    public static MethodDefinition GetConstructor(this TypeReference type)
+    {
+        return type.Resolve().Methods.First(m => m.IsConstructor && m.Parameters.Count == 0);
+    }
 }

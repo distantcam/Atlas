@@ -3,7 +3,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Anotar.Custom;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 public class ModuleWeaver
 {
@@ -40,21 +39,29 @@ public class ModuleWeaver
     {
         foreach (var method in type.Methods.Where(m => m.HasBody))
         {
-            foreach (var instruction in method.Body.Instructions)
+            try
             {
-                try
+                foreach (var instruction in method.Body.Instructions)
                 {
-                    MethodReference mapMethod;
-                    if (instruction.IsCall(out mapMethod) && mapMethod.DeclaringType.Namespace == "Atlas")
+                    try
                     {
-                        var localMethod = CreateLocalMapMethod(type, mapMethod);
-                        instruction.Operand = localMethod;
+                        MethodReference mapMethod;
+                        if (instruction.IsCall(out mapMethod) && mapMethod.DeclaringType.Namespace == "Atlas")
+                        {
+                            var localMethod = CreateLocalMapMethod(type, mapMethod);
+                            instruction.Operand = localMethod;
+                        }
+                    }
+                    catch (NonFatalException nonFatal)
+                    {
+                        Log.Error(nonFatal.Message);
                     }
                 }
-                catch (NonFatalException ex)
-                {
-                    Log.Error(ex.Message);
-                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error processing method '{0}' in type '{1}'.{2}{3}", method, type, Environment.NewLine, ex);
+                continue;
             }
         }
     }
@@ -80,7 +87,7 @@ public class ModuleWeaver
 
         if (mapperType == null)
         {
-            Log.Information("\tCreating mapping type for '{0}'.", destinationType);
+            Log.Information("Creating mapping type for '{0}'.", destinationType);
 
             mapperType = new TypeDefinition(
                                      "",
@@ -100,16 +107,12 @@ public class ModuleWeaver
 
         if (method == null)
         {
-            Log.Information("\tCreating mapping method for '{0}' in mapping type '{1}'.", sourceType, destinationType);
-
-            var ilHelper = new ILHelper(ModuleDefinition);
+            Log.Information("Creating mapping method for '{0}' in mapping type '{1}'.", sourceType, destinationType);
 
             method = new MethodDefinition("From" + sourceType.Name, MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Static, destinationType);
             method.Parameters.Add(new ParameterDefinition(sourceType));
 
-            method.Body = new MethodBody(method);
-            method.Body.Instructions.Add(ilHelper.New<NotImplementedException>());
-            method.Body.Instructions.Add(ilHelper.Throw());
+            method.Body = MapperImplementer.MapTo.From(ModuleDefinition, method, sourceType, destinationType);
 
             mapperType.Methods.Add(method);
         }
@@ -122,11 +125,11 @@ public class ModuleWeaver
         var referenceToRemove = ModuleDefinition.AssemblyReferences.FirstOrDefault(x => x.Name == "Atlas");
         if (referenceToRemove == null)
         {
-            Log.Information("\tNo reference to 'Atlas' found. References not modified.");
+            Log.Information("No reference to 'Atlas' found. References not modified.");
             return;
         }
 
         ModuleDefinition.AssemblyReferences.Remove(referenceToRemove);
-        Log.Information("\tRemoving reference to 'Atlas'.");
+        Log.Information("Removing reference to 'Atlas'.");
     }
 }

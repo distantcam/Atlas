@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using NUnit.Framework;
-using Shouldly;
 
 [TestFixture]
 public class SimpleTests
@@ -12,9 +11,9 @@ public class SimpleTests
         var type = AssemblyWeaver.Assembly.GetType("Simple");
         var instance = (dynamic)Activator.CreateInstance(type);
 
-        var result = instance.Map(new SimpleSource { TheString = "Foo" }) as SimpleDestination;
+        var result = instance.Map();
 
-        result.ShouldNotBe(null);
-        result.TheString.ShouldBe("Foo");
+        Assert.AreEqual("Foo", result.TheString);
+        Assert.AreEqual(42, result.TheNumber);
     }
 }

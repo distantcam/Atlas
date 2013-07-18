@@ -40,6 +40,7 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CecilExtensions.cs" />
+    <Compile Include="MapperImplementer.cs" />
     <Compile Include="NonFatalException.cs" />
     <Compile Include="ILHelper.cs" />
     <Compile Include="Logging.cs" />
