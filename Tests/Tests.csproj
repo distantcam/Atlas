@@ -35,6 +35,7 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="SimpleTests.cs" />
     <Compile Include="Helpers\AssemblyWeaver.cs" />
     <Compile Include="Helpers\Decompiler.cs" />
     <Compile Include="Helpers\MockAssemblyResolver.cs" />
@@ -50,6 +51,7 @@
       <HintPath>..\packages\ApprovalUtilities.3.0.01\lib\net35\ApprovalUtilities.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Mono.Cecil">
       <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.dll</HintPath>
     </Reference>
@@ -64,6 +66,9 @@
     </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.2\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Shouldly">
+      <HintPath>..\packages\Shouldly.1.1.1.1\lib\35\Shouldly.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>

@@ -39,6 +39,9 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="CecilExtensions.cs" />
+    <Compile Include="NonFatalException.cs" />
+    <Compile Include="ILHelper.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="ModuleWeaver.cs" />
   </ItemGroup>
@@ -59,6 +62,7 @@
     <Reference Include="Mono.Cecil.Rocks">
       <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Fody.targets" />
