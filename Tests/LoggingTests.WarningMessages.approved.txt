@@ -1,2 +1,2 @@
-﻿Warning[0] = No matching property 'MissingMatchesSource.TheString' on type 'MissingMatchesDestination'.
+﻿Warning[0] = No matching property or field 'MissingMatchesSource.TheString' on type 'MissingMatchesDestination'.
 Warning[1] = Property 'TheNumber' on type 'MissingMatchesSource' did not match on type 'MissingMatchesDestination'.

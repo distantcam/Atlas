@@ -15,5 +15,6 @@ public class SimpleTests
 
         Assert.AreEqual("Foo", result.TheString);
         Assert.AreEqual(42, result.TheNumber);
+        Assert.AreEqual("OfDreams", result.AField);
     }
 }

@@ -77,4 +77,18 @@ public class ILHelper
             throw new ArgumentNullException("property", "property is null.");
         return Instruction.Create(OpCodes.Callvirt, property.SetMethod);
     }
+
+    public Instruction GetField(FieldDefinition field)
+    {
+        if (field == null)
+            throw new ArgumentNullException("field", "field is null.");
+        return Instruction.Create(OpCodes.Ldfld, field);
+    }
+
+    public Instruction SetField(FieldDefinition field)
+    {
+        if (field == null)
+            throw new ArgumentNullException("field", "field is null.");
+        return Instruction.Create(OpCodes.Stfld, field);
+    }
 }

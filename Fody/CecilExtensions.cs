@@ -43,4 +43,9 @@ public static class CecilExtensions
     {
         return property.CustomAttributes.Any(attr => attr.AttributeType.FullName == name);
     }
+
+    public static bool HasAttribute(this FieldDefinition field, string name)
+    {
+        return field.CustomAttributes.Any(attr => attr.AttributeType.FullName == name);
+    }
 }

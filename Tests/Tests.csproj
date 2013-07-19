@@ -35,6 +35,7 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="IgnoreTests.cs" />
     <Compile Include="SimpleTests.cs" />
     <Compile Include="Helpers\AssemblyWeaver.cs" />
     <Compile Include="Helpers\Decompiler.cs" />
