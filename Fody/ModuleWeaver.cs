@@ -14,6 +14,8 @@ public class ModuleWeaver
     public IAssemblyResolver AssemblyResolver { get; set; }
     public string[] DefineConstants { get; set; }
 
+    private MapperImplementer.Mapper mapper;
+
     public ModuleWeaver()
     {
         LogInfo = s => { };
@@ -27,6 +29,8 @@ public class ModuleWeaver
         LoggerFactory.LogInfo = LogInfo;
         LoggerFactory.LogWarn = LogWarning;
         LoggerFactory.LogError = LogError;
+
+        mapper = new MapperImplementer.Mapper(ModuleDefinition);
 
         foreach (var type in ModuleDefinition.Types)
         {
@@ -114,7 +118,7 @@ public class ModuleWeaver
             method.Parameters.Add(new ParameterDefinition(sourceType));
             method.Parameters.Add(new ParameterDefinition(destinationType));
 
-            method.Body = MapperImplementer.Mapper.Map(ModuleDefinition, method, sourceType.Resolve(), destinationType.Resolve());
+            method.Body = mapper.Map(method, sourceType.Resolve(), destinationType.Resolve());
 
             mapperType.Methods.Add(method);
         }

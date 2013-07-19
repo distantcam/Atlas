@@ -1,7 +1,9 @@
-﻿Info[0] = Creating mapping method for 'IgnoreSource' in mapping type 'IgnoreDestination'.
-Info[1] = Creating mapping method for 'MissingMatchesSource' in mapping type 'MissingMatchesDestination'.
-Info[2] = Creating mapping method for 'SimpleSource' in mapping type 'SimpleDestination'.
-Info[3] = Creating mapping type for 'IgnoreDestination'.
-Info[4] = Creating mapping type for 'MissingMatchesDestination'.
-Info[5] = Creating mapping type for 'SimpleDestination'.
-Info[6] = Removing reference to 'Atlas'.
+﻿Info[0] = Creating mapping method for 'ConversionsSource' in mapping type 'ConversionsDestination'.
+Info[1] = Creating mapping method for 'IgnoreSource' in mapping type 'IgnoreDestination'.
+Info[2] = Creating mapping method for 'MissingMatchesSource' in mapping type 'MissingMatchesDestination'.
+Info[3] = Creating mapping method for 'SimpleSource' in mapping type 'SimpleDestination'.
+Info[4] = Creating mapping type for 'ConversionsDestination'.
+Info[5] = Creating mapping type for 'IgnoreDestination'.
+Info[6] = Creating mapping type for 'MissingMatchesDestination'.
+Info[7] = Creating mapping type for 'SimpleDestination'.
+Info[8] = Removing reference to 'Atlas'.

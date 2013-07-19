@@ -57,6 +57,13 @@ public class ILHelper
         return Instruction.Create(OpCodes.Ldarg, parameter);
     }
 
+    public Instruction LoadAddress(VariableDefinition variable)
+    {
+        if (variable == null)
+            throw new ArgumentNullException("variable", "variable is null.");
+        return Instruction.Create(OpCodes.Ldloca, variable);
+    }
+
     public Instruction Store(VariableDefinition variable)
     {
         if (variable == null)
@@ -90,5 +97,12 @@ public class ILHelper
         if (field == null)
             throw new ArgumentNullException("field", "field is null.");
         return Instruction.Create(OpCodes.Stfld, field);
+    }
+
+    public Instruction Call(MethodReference method)
+    {
+        if (method == null)
+            throw new ArgumentNullException("method", "method is null.");
+        return Instruction.Create(OpCodes.Call, method);
     }
 }

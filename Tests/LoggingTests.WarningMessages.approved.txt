@@ -1,2 +1,2 @@
-﻿Warning[0] = No matching property or field 'MissingMatchesSource.TheString' on type 'MissingMatchesDestination'.
-Warning[1] = Property 'TheNumber' on type 'MissingMatchesSource' did not match on type 'MissingMatchesDestination'.
+﻿Warning[0] = Cannot convert from type 'MissingMatchesSource' to type 'MissingMatchesDestination' for property 'System.Int32 MissingMatchesSource::TheNumber()'.
+Warning[1] = No matching property or field 'MissingMatchesSource.TheString' on type 'MissingMatchesDestination'.

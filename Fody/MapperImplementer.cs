@@ -1,21 +1,29 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Anotar.Custom;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 
-internal static class MapperImplementer
+internal class MapperImplementer
 {
-    internal static class Mapper
+    internal class Mapper
     {
-        public static MethodBody Map(ModuleDefinition moduleDefinition, MethodDefinition method, TypeDefinition sourceType, TypeDefinition destinationType)
-        {
-            var ilHelper = new ILHelper(moduleDefinition);
+        private readonly ModuleDefinition moduleDefinition;
+        private readonly ILHelper ilHelper;
 
+        public Mapper(ModuleDefinition moduleDefinition)
+        {
+            this.moduleDefinition = moduleDefinition;
+            ilHelper = new ILHelper(moduleDefinition);
+        }
+
+        public MethodBody Map(MethodDefinition method, TypeDefinition sourceType, TypeDefinition destinationType)
+        {
             var body = new MethodBody(method);
 
-            foreach (var sourceProperty in sourceType.Properties.Where(property => property.GetMethod.IsPublic && property.SetMethod.IsPublic))
+            foreach (var sourceProperty in sourceType.Properties.Where(property => property.GetMethod.IsPublicInstance() && property.SetMethod.IsPublicInstance()))
             {
                 if (sourceProperty.HasAttribute("Atlas.IgnoreMapAttribute"))
                     continue;
@@ -29,33 +37,45 @@ internal static class MapperImplementer
                 }
                 if (destinationProperty != null)
                 {
-                    if (sourceProperty.PropertyType != destinationProperty.PropertyType)
+                    VariableDefinition tempVar;
+                    var conversionInstructions = GetConversion(sourceProperty.PropertyType, destinationProperty.PropertyType, out tempVar);
+                    if (conversionInstructions == null)
                     {
-                        Log.Warning("Property '{0}' on type '{1}' did not match on type '{2}'.", sourceProperty.Name, sourceType, destinationType);
+                        Log.Warning("Cannot convert from type '{0}' to type '{1}' for property '{2}'.", sourceType, destinationType, sourceProperty);
                         continue;
                     }
+                    if (tempVar != null)
+                        body.Variables.Add(tempVar);
 
                     body.Instructions.Add(ilHelper.Load(method.Parameters[1]));
                     body.Instructions.Add(ilHelper.Load(method.Parameters[0]));
                     body.Instructions.Add(ilHelper.GetProperty(sourceProperty));
+                    foreach (var instruction in conversionInstructions)
+                        body.Instructions.Add(instruction);
                     body.Instructions.Add(ilHelper.SetProperty(destinationProperty));
                 }
                 if (destinationField != null)
                 {
-                    if (sourceProperty.PropertyType != destinationField.FieldType)
+                    VariableDefinition tempVar;
+                    var conversionInstructions = GetConversion(sourceProperty.PropertyType, destinationField.FieldType, out tempVar);
+                    if (conversionInstructions == null)
                     {
-                        Log.Warning("Property '{0}' on type '{1}' did not match field on type '{2}'.", sourceProperty.Name, sourceType, destinationType);
+                        Log.Warning("Cannot convert from type '{0}' to type '{1}' for property '{2}'.", sourceType, destinationType, sourceProperty);
                         continue;
                     }
+                    if (tempVar != null)
+                        body.Variables.Add(tempVar);
 
                     body.Instructions.Add(ilHelper.Load(method.Parameters[1]));
                     body.Instructions.Add(ilHelper.Load(method.Parameters[0]));
                     body.Instructions.Add(ilHelper.GetProperty(sourceProperty));
+                    foreach (var instruction in conversionInstructions)
+                        body.Instructions.Add(instruction);
                     body.Instructions.Add(ilHelper.SetField(destinationField));
                 }
             }
 
-            foreach (var sourceField in sourceType.Fields.Where(field => field.IsPublic))
+            foreach (var sourceField in sourceType.Fields.Where(field => field.IsPublicInstance()))
             {
                 if (sourceField.HasAttribute("Atlas.IgnoreMapAttribute"))
                     continue;
@@ -69,37 +89,79 @@ internal static class MapperImplementer
                 }
                 if (destinationField != null)
                 {
-                    if (sourceField.FieldType != destinationField.FieldType)
+                    VariableDefinition tempVar;
+                    var conversionInstructions = GetConversion(sourceField.FieldType, destinationField.FieldType, out tempVar);
+                    if (conversionInstructions == null)
                     {
-                        Log.Warning("Field '{0}' on type '{1}' did not match on type '{2}'.", sourceField.Name, sourceType, destinationType);
+                        Log.Warning("Cannot convert from type '{0}' to type '{1}' for field '{2}'.", sourceType, destinationType, sourceField);
                         continue;
                     }
+                    if (tempVar != null)
+                        body.Variables.Add(tempVar);
 
                     body.Instructions.Add(ilHelper.Load(method.Parameters[1]));
                     body.Instructions.Add(ilHelper.Load(method.Parameters[0]));
                     body.Instructions.Add(ilHelper.GetField(sourceField));
+                    foreach (var instruction in conversionInstructions)
+                        body.Instructions.Add(instruction);
                     body.Instructions.Add(ilHelper.SetField(destinationField));
                 }
                 if (destinationProperty != null)
                 {
-                    if (sourceField.FieldType != destinationProperty.PropertyType)
+                    VariableDefinition tempVar;
+                    var conversionInstructions = GetConversion(sourceField.FieldType, destinationProperty.PropertyType, out tempVar);
+                    if (conversionInstructions == null)
                     {
-                        Log.Warning("Field '{0}' on type '{1}' did not match property on type '{2}'.", sourceField.Name, sourceType, destinationType);
+                        Log.Warning("Cannot convert from type '{0}' to type '{1}' for field '{2}'.", sourceType, destinationType, sourceField);
                         continue;
                     }
+                    if (tempVar != null)
+                        body.Variables.Add(tempVar);
 
                     body.Instructions.Add(ilHelper.Load(method.Parameters[1]));
                     body.Instructions.Add(ilHelper.Load(method.Parameters[0]));
                     body.Instructions.Add(ilHelper.GetField(sourceField));
+                    foreach (var instruction in conversionInstructions)
+                        body.Instructions.Add(instruction);
                     body.Instructions.Add(ilHelper.SetProperty(destinationProperty));
                 }
             }
 
             body.Instructions.Add(ilHelper.Return());
 
+            if (body.Variables.Any())
+                body.InitLocals = true;
+
             body.OptimizeMacros();
 
             return body;
+        }
+
+        public IEnumerable<Instruction> GetConversion(TypeReference sourceType, TypeReference destinationType, out VariableDefinition tempVar)
+        {
+            tempVar = null;
+
+            if (sourceType == destinationType)
+                return new Instruction[0];
+
+            if (destinationType == moduleDefinition.TypeSystem.String)
+            {
+                var toStringMethod = moduleDefinition.Import(sourceType.GetMethod("ToString"));
+
+                var result = new List<Instruction>();
+
+                if (sourceType.IsValueType)
+                {
+                    tempVar = new VariableDefinition(sourceType);
+                    result.Add(ilHelper.Store(tempVar));
+                    result.Add(ilHelper.LoadAddress(tempVar));
+                }
+
+                result.Add(ilHelper.Call(toStringMethod));
+                return result;
+            }
+
+            return null;
         }
     }
 }

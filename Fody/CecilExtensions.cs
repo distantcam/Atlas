@@ -39,6 +39,11 @@ public static class CecilExtensions
         return type.Resolve().Methods.First(m => m.IsConstructor && m.Parameters.Count == 0);
     }
 
+    public static MethodDefinition GetMethod(this TypeReference type, string name)
+    {
+        return type.Resolve().Methods.FirstOrDefault(m => m.Name == name);
+    }
+
     public static bool HasAttribute(this PropertyDefinition property, string name)
     {
         return property.CustomAttributes.Any(attr => attr.AttributeType.FullName == name);
@@ -47,5 +52,15 @@ public static class CecilExtensions
     public static bool HasAttribute(this FieldDefinition field, string name)
     {
         return field.CustomAttributes.Any(attr => attr.AttributeType.FullName == name);
+    }
+
+    public static bool IsPublicInstance(this MethodDefinition method)
+    {
+        return method.IsPublic && !method.IsStatic;
+    }
+
+    public static bool IsPublicInstance(this FieldDefinition field)
+    {
+        return field.IsPublic && !field.IsStatic;
     }
 }
