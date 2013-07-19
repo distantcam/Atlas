@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace Atlas
 {
-    public class MapTo<TDestination>
+    public static class Mapper
     {
-        public static TDestination From<TSource>(TSource source)
+        public static void Map<TSource, TDestination>(TSource source, TDestination destination)
         {
             throw new NotImplementedException();
         }

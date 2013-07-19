@@ -19,6 +19,10 @@ public class Simple
     public SimpleDestination Map()
     {
         var source = new SimpleSource { TheString = "Foo", TheNumber = 42 };
-        return MapTo<SimpleDestination>.From(source);
+        var destination = new SimpleDestination();
+
+        Mapper.Map(source, destination);
+
+        return destination;
     }
 }

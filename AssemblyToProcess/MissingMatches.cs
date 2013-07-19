@@ -18,6 +18,10 @@ public class MissingMatches
     public MissingMatchesDestination Map()
     {
         var source = new MissingMatchesSource { TheString = "Foo", TheNumber = 42 };
-        return MapTo<MissingMatchesDestination>.From(source);
+        var destination = new MissingMatchesDestination();
+
+        Mapper.Map(source, destination);
+
+        return destination;
     }
 }

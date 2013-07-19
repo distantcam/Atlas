@@ -7,19 +7,13 @@ using Mono.Cecil.Rocks;
 
 internal static class MapperImplementer
 {
-    internal static class MapTo
+    internal static class Mapper
     {
-        public static MethodBody From(ModuleDefinition moduleDefinition, MethodDefinition method, TypeReference sourceType, TypeReference destinationType)
+        public static MethodBody Map(ModuleDefinition moduleDefinition, MethodDefinition method, TypeReference sourceType, TypeReference destinationType)
         {
             var ilHelper = new ILHelper(moduleDefinition);
 
             var body = new MethodBody(method);
-
-            var tempVar = new VariableDefinition(destinationType);
-            body.Variables.Add(tempVar);
-
-            body.Instructions.Add(ilHelper.New(destinationType));
-            body.Instructions.Add(ilHelper.Store(tempVar));
 
             var sourceProperties = sourceType.Resolve().Properties;
             var destinationProperties = destinationType.Resolve().Properties;
@@ -38,16 +32,14 @@ internal static class MapperImplementer
                     continue;
                 }
 
-                body.Instructions.Add(ilHelper.Load(tempVar));
+                body.Instructions.Add(ilHelper.Load(method.Parameters[1]));
                 body.Instructions.Add(ilHelper.Load(method.Parameters[0]));
                 body.Instructions.Add(ilHelper.GetProperty(sourceProperty));
                 body.Instructions.Add(ilHelper.SetProperty(destinationProperty));
             }
 
-            body.Instructions.Add(ilHelper.Load(tempVar));
             body.Instructions.Add(ilHelper.Return());
 
-            body.InitLocals = true;
             body.OptimizeMacros();
 
             return body;

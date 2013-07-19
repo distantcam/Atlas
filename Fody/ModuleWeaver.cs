@@ -68,10 +68,10 @@ public class ModuleWeaver
 
     private MethodReference CreateLocalMapMethod(TypeDefinition type, MethodReference originalMethod)
     {
-        if (originalMethod.Match("MapTo`1", "From"))
+        if (originalMethod.Match("Mapper", "Map"))
         {
-            var destinationType = originalMethod.DeclaringType.GetGenericInstance().GenericArguments[0];
             var sourceType = originalMethod.GetGenericInstance().GenericArguments[0];
+            var destinationType = originalMethod.GetGenericInstance().GenericArguments[1];
 
             var mapperType = FindOrCreateMapper(type, destinationType);
 
@@ -103,16 +103,17 @@ public class ModuleWeaver
 
     private MethodDefinition FindOrCreateMapToFromMethod(TypeDefinition mapperType, TypeReference sourceType, TypeReference destinationType)
     {
-        var method = mapperType.Methods.FirstOrDefault(m => m.Name == "To" && m.IsGenericInstance && m.GetGenericInstance().GenericArguments[0] == sourceType);
+        var method = mapperType.Methods.FirstOrDefault(m => m.Name == "From" + sourceType.Name);
 
         if (method == null)
         {
             Log.Information("Creating mapping method for '{0}' in mapping type '{1}'.", sourceType, destinationType);
 
-            method = new MethodDefinition("From" + sourceType.Name, MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Static, destinationType);
+            method = new MethodDefinition("From" + sourceType.Name, MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Static, ModuleDefinition.TypeSystem.Void);
             method.Parameters.Add(new ParameterDefinition(sourceType));
+            method.Parameters.Add(new ParameterDefinition(destinationType));
 
-            method.Body = MapperImplementer.MapTo.From(ModuleDefinition, method, sourceType, destinationType);
+            method.Body = MapperImplementer.Mapper.Map(ModuleDefinition, method, sourceType, destinationType);
 
             mapperType.Methods.Add(method);
         }
