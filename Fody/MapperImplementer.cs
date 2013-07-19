@@ -9,17 +9,20 @@ internal static class MapperImplementer
 {
     internal static class Mapper
     {
-        public static MethodBody Map(ModuleDefinition moduleDefinition, MethodDefinition method, TypeReference sourceType, TypeReference destinationType)
+        public static MethodBody Map(ModuleDefinition moduleDefinition, MethodDefinition method, TypeDefinition sourceType, TypeDefinition destinationType)
         {
             var ilHelper = new ILHelper(moduleDefinition);
 
             var body = new MethodBody(method);
 
-            var sourceProperties = sourceType.Resolve().Properties;
-            var destinationProperties = destinationType.Resolve().Properties;
+            var sourceProperties = sourceType.Properties;
+            var destinationProperties = destinationType.Properties;
 
             foreach (var sourceProperty in sourceProperties)
             {
+                if (sourceProperty.HasAttribute("Atlas.IgnoreMapAttribute"))
+                    continue;
+
                 var destinationProperty = destinationProperties.FirstOrDefault(p => p.Name == sourceProperty.Name);
                 if (destinationProperty == null)
                 {

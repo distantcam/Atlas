@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Anotar.Custom;
 using Mono.Cecil;
+using Mono.Collections.Generic;
 
 public class ModuleWeaver
 {
@@ -113,7 +114,7 @@ public class ModuleWeaver
             method.Parameters.Add(new ParameterDefinition(sourceType));
             method.Parameters.Add(new ParameterDefinition(destinationType));
 
-            method.Body = MapperImplementer.Mapper.Map(ModuleDefinition, method, sourceType, destinationType);
+            method.Body = MapperImplementer.Mapper.Map(ModuleDefinition, method, sourceType.Resolve(), destinationType.Resolve());
 
             mapperType.Methods.Add(method);
         }
@@ -123,6 +124,19 @@ public class ModuleWeaver
 
     private void CleanReferences()
     {
+        foreach (var typeDefinition in ModuleDefinition.Types)
+        {
+            RemoveAtlasAttributes(typeDefinition.CustomAttributes);
+            foreach (var field in typeDefinition.Fields)
+            {
+                RemoveAtlasAttributes(field.CustomAttributes);
+            }
+            foreach (var property in typeDefinition.Properties)
+            {
+                RemoveAtlasAttributes(property.CustomAttributes);
+            }
+        }
+
         var referenceToRemove = ModuleDefinition.AssemblyReferences.FirstOrDefault(x => x.Name == "Atlas");
         if (referenceToRemove == null)
         {
@@ -132,5 +146,14 @@ public class ModuleWeaver
 
         ModuleDefinition.AssemblyReferences.Remove(referenceToRemove);
         Log.Information("Removing reference to 'Atlas'.");
+    }
+
+    private void RemoveAtlasAttributes(Collection<CustomAttribute> attributes)
+    {
+        var atlasAttributes = attributes.Where(x => x.AttributeType.Namespace == "Atlas").ToList();
+        foreach (var attribute in atlasAttributes)
+        {
+            attributes.Remove(attribute);
+        }
     }
 }

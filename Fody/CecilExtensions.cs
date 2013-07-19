@@ -38,4 +38,9 @@ public static class CecilExtensions
     {
         return type.Resolve().Methods.First(m => m.IsConstructor && m.Parameters.Count == 0);
     }
+
+    public static bool HasAttribute(this PropertyDefinition property, string name)
+    {
+        return property.CustomAttributes.Any(attr => attr.AttributeType.FullName == name);
+    }
 }
