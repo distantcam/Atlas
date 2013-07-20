@@ -41,7 +41,12 @@ public static class CecilExtensions
 
     public static MethodDefinition GetMethod(this TypeReference type, string name)
     {
-        return type.Resolve().Methods.FirstOrDefault(m => m.Name == name);
+        return type.Resolve().Methods.First(m => m.Name == name && m.Parameters.Count == 0);
+    }
+
+    public static MethodDefinition GetMethod(this TypeReference type, string name, params TypeReference[] parameters)
+    {
+        return type.Resolve().Methods.First(m => m.Name == name && m.Parameters.Select(p => p.ParameterType.Resolve()).SequenceEqual(parameters.Select(p => p.Resolve())));
     }
 
     public static bool HasAttribute(this PropertyDefinition property, string name)

@@ -99,10 +99,10 @@ public class ILHelper
         return Instruction.Create(OpCodes.Stfld, field);
     }
 
-    public Instruction Call(MethodReference method)
+    public Instruction Call(MethodDefinition method)
     {
         if (method == null)
             throw new ArgumentNullException("method", "method is null.");
-        return Instruction.Create(OpCodes.Call, method);
+        return Instruction.Create(OpCodes.Call, moduleDefinition.Import(method));
     }
 }

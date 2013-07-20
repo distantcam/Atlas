@@ -41,7 +41,7 @@ internal class MapperImplementer
                     var conversionInstructions = GetConversion(sourceProperty.PropertyType, destinationProperty.PropertyType, out tempVar);
                     if (conversionInstructions == null)
                     {
-                        Log.Warning("Cannot convert from type '{0}' to type '{1}' for property '{2}'.", sourceType, destinationType, sourceProperty);
+                        Log.Warning("Cannot convert from type '{0}' to type '{1}' for property '{2}'.", sourceType, destinationType, sourceProperty.Name);
                         continue;
                     }
                     if (tempVar != null)
@@ -60,7 +60,7 @@ internal class MapperImplementer
                     var conversionInstructions = GetConversion(sourceProperty.PropertyType, destinationField.FieldType, out tempVar);
                     if (conversionInstructions == null)
                     {
-                        Log.Warning("Cannot convert from type '{0}' to type '{1}' for property '{2}'.", sourceType, destinationType, sourceProperty);
+                        Log.Warning("Cannot convert from type '{0}' to type '{1}' for property '{2}'.", sourceType, destinationType, sourceProperty.Name);
                         continue;
                     }
                     if (tempVar != null)
@@ -93,7 +93,7 @@ internal class MapperImplementer
                     var conversionInstructions = GetConversion(sourceField.FieldType, destinationField.FieldType, out tempVar);
                     if (conversionInstructions == null)
                     {
-                        Log.Warning("Cannot convert from type '{0}' to type '{1}' for field '{2}'.", sourceType, destinationType, sourceField);
+                        Log.Warning("Cannot convert from type '{0}' to type '{1}' for field '{2}'.", sourceType, destinationType, sourceField.Name);
                         continue;
                     }
                     if (tempVar != null)
@@ -112,7 +112,7 @@ internal class MapperImplementer
                     var conversionInstructions = GetConversion(sourceField.FieldType, destinationProperty.PropertyType, out tempVar);
                     if (conversionInstructions == null)
                     {
-                        Log.Warning("Cannot convert from type '{0}' to type '{1}' for field '{2}'.", sourceType, destinationType, sourceField);
+                        Log.Warning("Cannot convert from type '{0}' to type '{1}' for field '{2}'.", sourceType, destinationType, sourceField.Name);
                         continue;
                     }
                     if (tempVar != null)
@@ -146,8 +146,6 @@ internal class MapperImplementer
 
             if (destinationType == moduleDefinition.TypeSystem.String)
             {
-                var toStringMethod = moduleDefinition.Import(sourceType.GetMethod("ToString"));
-
                 var result = new List<Instruction>();
 
                 if (sourceType.IsValueType)
@@ -157,9 +155,47 @@ internal class MapperImplementer
                     result.Add(ilHelper.LoadAddress(tempVar));
                 }
 
-                result.Add(ilHelper.Call(toStringMethod));
+                result.Add(ilHelper.Call(sourceType.GetMethod("ToString")));
                 return result;
             }
+
+            var convertType = moduleDefinition.Import(typeof(Convert));
+
+            if (destinationType == moduleDefinition.TypeSystem.Boolean)
+                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToBoolean", sourceType)) };
+
+            if (destinationType == moduleDefinition.TypeSystem.Byte)
+                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToByte", sourceType)) };
+
+            if (destinationType == moduleDefinition.TypeSystem.Char)
+                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToChar", sourceType)) };
+
+            if (destinationType == moduleDefinition.TypeSystem.Double)
+                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToDouble", sourceType)) };
+
+            if (destinationType == moduleDefinition.TypeSystem.Int16)
+                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToInt16", sourceType)) };
+
+            if (destinationType == moduleDefinition.TypeSystem.Int32)
+                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToInt32", sourceType)) };
+
+            if (destinationType == moduleDefinition.TypeSystem.Int64)
+                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToInt64", sourceType)) };
+
+            if (destinationType == moduleDefinition.TypeSystem.SByte)
+                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToSByte", sourceType)) };
+
+            if (destinationType == moduleDefinition.TypeSystem.Single)
+                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToSingle", sourceType)) };
+
+            if (destinationType == moduleDefinition.TypeSystem.UInt16)
+                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToUInt16", sourceType)) };
+
+            if (destinationType == moduleDefinition.TypeSystem.UInt32)
+                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToUInt32", sourceType)) };
+
+            if (destinationType == moduleDefinition.TypeSystem.UInt64)
+                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToUInt64", sourceType)) };
 
             return null;
         }
