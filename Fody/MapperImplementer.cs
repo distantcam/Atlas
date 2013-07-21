@@ -119,41 +119,67 @@ internal class MapperImplementer
 
             var convertType = moduleDefinition.Import(typeof(Convert));
 
-            if (destinationType == moduleDefinition.TypeSystem.Boolean)
-                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToBoolean", sourceType)) };
+            if (sourceType == moduleDefinition.TypeSystem.Boolean ||
+                sourceType == moduleDefinition.TypeSystem.Byte ||
+                sourceType == moduleDefinition.TypeSystem.Char ||
+                sourceType == moduleDefinition.TypeSystem.Double ||
+                sourceType == moduleDefinition.TypeSystem.Int16 ||
+                sourceType == moduleDefinition.TypeSystem.Int32 ||
+                sourceType == moduleDefinition.TypeSystem.Int64 ||
+                sourceType == moduleDefinition.TypeSystem.SByte ||
+                sourceType == moduleDefinition.TypeSystem.Single ||
+                sourceType == moduleDefinition.TypeSystem.UInt16 ||
+                sourceType == moduleDefinition.TypeSystem.UInt32 ||
+                sourceType == moduleDefinition.TypeSystem.UInt64)
+            {
+                if (destinationType == moduleDefinition.TypeSystem.Boolean)
+                    return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToBoolean", sourceType)) };
 
-            if (destinationType == moduleDefinition.TypeSystem.Byte)
-                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToByte", sourceType)) };
+                if (destinationType == moduleDefinition.TypeSystem.Byte)
+                    return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToByte", sourceType)) };
 
-            if (destinationType == moduleDefinition.TypeSystem.Char)
-                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToChar", sourceType)) };
+                if (destinationType == moduleDefinition.TypeSystem.Char)
+                    return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToChar", sourceType)) };
 
-            if (destinationType == moduleDefinition.TypeSystem.Double)
-                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToDouble", sourceType)) };
+                if (destinationType == moduleDefinition.TypeSystem.Double)
+                    return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToDouble", sourceType)) };
 
-            if (destinationType == moduleDefinition.TypeSystem.Int16)
-                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToInt16", sourceType)) };
+                if (destinationType == moduleDefinition.TypeSystem.Int16)
+                    return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToInt16", sourceType)) };
 
-            if (destinationType == moduleDefinition.TypeSystem.Int32)
-                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToInt32", sourceType)) };
+                if (destinationType == moduleDefinition.TypeSystem.Int32)
+                    return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToInt32", sourceType)) };
 
-            if (destinationType == moduleDefinition.TypeSystem.Int64)
-                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToInt64", sourceType)) };
+                if (destinationType == moduleDefinition.TypeSystem.Int64)
+                    return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToInt64", sourceType)) };
 
-            if (destinationType == moduleDefinition.TypeSystem.SByte)
-                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToSByte", sourceType)) };
+                if (destinationType == moduleDefinition.TypeSystem.SByte)
+                    return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToSByte", sourceType)) };
 
-            if (destinationType == moduleDefinition.TypeSystem.Single)
-                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToSingle", sourceType)) };
+                if (destinationType == moduleDefinition.TypeSystem.Single)
+                    return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToSingle", sourceType)) };
 
-            if (destinationType == moduleDefinition.TypeSystem.UInt16)
-                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToUInt16", sourceType)) };
+                if (destinationType == moduleDefinition.TypeSystem.UInt16)
+                    return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToUInt16", sourceType)) };
 
-            if (destinationType == moduleDefinition.TypeSystem.UInt32)
-                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToUInt32", sourceType)) };
+                if (destinationType == moduleDefinition.TypeSystem.UInt32)
+                    return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToUInt32", sourceType)) };
 
-            if (destinationType == moduleDefinition.TypeSystem.UInt64)
-                return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToUInt64", sourceType)) };
+                if (destinationType == moduleDefinition.TypeSystem.UInt64)
+                    return new Instruction[] { ilHelper.Call(convertType.GetMethod("ToUInt64", sourceType)) };
+            }
+
+            if (destinationType.Match(typeof(Nullable<>)))
+            {
+                var genericDestinationType = destinationType.GetGenericInstance();
+                var nullType = genericDestinationType.GenericArguments[0];
+                if (sourceType == nullType)
+                {
+                    var ctor = destinationType.Resolve().Methods.First(m => m.IsConstructor);
+
+                    return new Instruction[] { ilHelper.New(ctor.MakeHostInstanceGeneric(sourceType)) };
+                }
+            }
 
             return null;
         }

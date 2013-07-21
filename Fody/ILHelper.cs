@@ -43,6 +43,13 @@ public class ILHelper
         return Instruction.Create(OpCodes.Newobj, type.GetConstructor());
     }
 
+    public Instruction New(MethodReference ctor)
+    {
+        if (ctor == null)
+            throw new ArgumentNullException("ctor", "ctor is null.");
+        return Instruction.Create(OpCodes.Newobj, moduleDefinition.Import(ctor));
+    }
+
     public Instruction Load(VariableDefinition variable)
     {
         if (variable == null)
@@ -75,14 +82,14 @@ public class ILHelper
     {
         if (property == null)
             throw new ArgumentNullException("property", "property is null.");
-        return Instruction.Create(OpCodes.Callvirt, property.GetMethod);
+        return Instruction.Create(OpCodes.Callvirt, moduleDefinition.Import(property.GetMethod));
     }
 
     public Instruction SetProperty(PropertyDefinition property)
     {
         if (property == null)
             throw new ArgumentNullException("property", "property is null.");
-        return Instruction.Create(OpCodes.Callvirt, property.SetMethod);
+        return Instruction.Create(OpCodes.Callvirt, moduleDefinition.Import(property.SetMethod));
     }
 
     public Instruction GetField(FieldDefinition field)
@@ -99,10 +106,17 @@ public class ILHelper
         return Instruction.Create(OpCodes.Stfld, field);
     }
 
-    public Instruction Call(MethodDefinition method)
+    public Instruction Call(MethodReference method)
     {
         if (method == null)
             throw new ArgumentNullException("method", "method is null.");
         return Instruction.Create(OpCodes.Call, moduleDefinition.Import(method));
+    }
+
+    public Instruction Callvirt(MethodReference method)
+    {
+        if (method == null)
+            throw new ArgumentNullException("method", "method is null.");
+        return Instruction.Create(OpCodes.Callvirt, moduleDefinition.Import(method));
     }
 }
