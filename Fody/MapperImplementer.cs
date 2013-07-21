@@ -28,40 +28,7 @@ internal class MapperImplementer
                 if (sourceProperty.HasAttribute("Atlas.IgnoreMapAttribute"))
                     continue;
 
-                var destinationProperty = destinationType.Properties.FirstOrDefault(p => p.Name == sourceProperty.Name && p.SetMethod.IsPublicInstance());
-                var destinationField = destinationType.Fields.FirstOrDefault(f => f.Name == sourceProperty.Name && f.IsPublicInstance());
-                if (destinationProperty == null && destinationField == null)
-                {
-                    Log.Warning("No matching property or field '{0}.{1}' on type '{2}'.", sourceType, sourceProperty.Name, destinationType);
-                    continue;
-                }
-
-                VariableDefinition tempVar = null;
-                IEnumerable<Instruction> conversionInstructions = null;
-
-                if (destinationProperty != null)
-                    conversionInstructions = GetConversion(sourceProperty.PropertyType, destinationProperty.PropertyType, out tempVar);
-                if (destinationField != null)
-                    conversionInstructions = GetConversion(sourceProperty.PropertyType, destinationField.FieldType, out tempVar);
-
-                if (conversionInstructions == null)
-                {
-                    Log.Warning("Cannot convert from type '{0}' to type '{1}' for property '{2}'.", sourceType, destinationType, sourceProperty.Name);
-                    continue;
-                }
-                if (tempVar != null)
-                    body.Variables.Add(tempVar);
-
-                body.Instructions.Add(ilHelper.Load(method.Parameters[1]));
-                body.Instructions.Add(ilHelper.Load(method.Parameters[0]));
-                body.Instructions.Add(ilHelper.GetProperty(sourceProperty));
-                foreach (var instruction in conversionInstructions)
-                    body.Instructions.Add(instruction);
-
-                if (destinationProperty != null)
-                    body.Instructions.Add(ilHelper.SetProperty(destinationProperty));
-                if (destinationField != null)
-                    body.Instructions.Add(ilHelper.SetField(destinationField));
+                MapMember(method, body, sourceType, destinationType, sourceProperty, sourceProperty.PropertyType, ilHelper.GetProperty(sourceProperty), "property");
             }
 
             foreach (var sourceField in sourceType.Fields.Where(field => field.IsPublicInstance()))
@@ -69,40 +36,7 @@ internal class MapperImplementer
                 if (sourceField.HasAttribute("Atlas.IgnoreMapAttribute"))
                     continue;
 
-                var destinationProperty = destinationType.Properties.FirstOrDefault(p => p.Name == sourceField.Name);
-                var destinationField = destinationType.Fields.FirstOrDefault(p => p.Name == sourceField.Name);
-                if (destinationProperty == null && destinationField == null)
-                {
-                    Log.Warning("No matching property or field '{0}.{1}' on type '{2}'.", sourceType, sourceField.Name, destinationType);
-                    continue;
-                }
-
-                VariableDefinition tempVar = null;
-                IEnumerable<Instruction> conversionInstructions = null;
-
-                if (destinationProperty != null)
-                    conversionInstructions = GetConversion(sourceField.FieldType, destinationProperty.PropertyType, out tempVar);
-                if (destinationField != null)
-                    conversionInstructions = GetConversion(sourceField.FieldType, destinationField.FieldType, out tempVar);
-
-                if (conversionInstructions == null)
-                {
-                    Log.Warning("Cannot convert from type '{0}' to type '{1}' for field '{2}'.", sourceType, destinationType, sourceField.Name);
-                    continue;
-                }
-                if (tempVar != null)
-                    body.Variables.Add(tempVar);
-
-                body.Instructions.Add(ilHelper.Load(method.Parameters[1]));
-                body.Instructions.Add(ilHelper.Load(method.Parameters[0]));
-                body.Instructions.Add(ilHelper.GetField(sourceField));
-                foreach (var instruction in conversionInstructions)
-                    body.Instructions.Add(instruction);
-
-                if (destinationProperty != null)
-                    body.Instructions.Add(ilHelper.SetProperty(destinationProperty));
-                if (destinationField != null)
-                    body.Instructions.Add(ilHelper.SetField(destinationField));
+                MapMember(method, body, sourceType, destinationType, sourceField, sourceField.FieldType, ilHelper.GetField(sourceField), "field");
             }
 
             body.Instructions.Add(ilHelper.Return());
@@ -115,7 +49,53 @@ internal class MapperImplementer
             return body;
         }
 
-        public IEnumerable<Instruction> GetConversion(TypeReference sourceType, TypeReference destinationType, out VariableDefinition tempVar)
+        private void MapMember(
+            MethodDefinition method,
+            MethodBody body,
+            TypeDefinition sourceType,
+            TypeDefinition destinationType,
+            MemberReference sourceMember,
+            TypeReference sourceMemberType,
+            Instruction getSourceMemberInstruction,
+            string sourceMemberLogName)
+        {
+            var destinationProperty = destinationType.Properties.FirstOrDefault(p => p.Name == sourceMember.Name && p.SetMethod.IsPublicInstance());
+            var destinationField = destinationType.Fields.FirstOrDefault(f => f.Name == sourceMember.Name && f.IsPublicInstance());
+            if (destinationProperty == null && destinationField == null)
+            {
+                Log.Warning("No matching property or field '{0}.{1}' on type '{2}'.", sourceType, sourceMember.Name, destinationType);
+                return;
+            }
+
+            VariableDefinition tempVar = null;
+            IEnumerable<Instruction> conversionInstructions = null;
+
+            if (destinationProperty != null)
+                conversionInstructions = GetConversion(sourceMemberType, destinationProperty.PropertyType, out tempVar);
+            if (destinationField != null)
+                conversionInstructions = GetConversion(sourceMemberType, destinationField.FieldType, out tempVar);
+
+            if (conversionInstructions == null)
+            {
+                Log.Warning("Cannot convert from type '{0}' to type '{1}' for {3} '{2}'.", sourceType, destinationType, sourceMember.Name, sourceMemberLogName);
+                return;
+            }
+            if (tempVar != null)
+                body.Variables.Add(tempVar);
+
+            body.Instructions.Add(ilHelper.Load(method.Parameters[1]));
+            body.Instructions.Add(ilHelper.Load(method.Parameters[0]));
+            body.Instructions.Add(getSourceMemberInstruction);
+            foreach (var instruction in conversionInstructions)
+                body.Instructions.Add(instruction);
+
+            if (destinationProperty != null)
+                body.Instructions.Add(ilHelper.SetProperty(destinationProperty));
+            if (destinationField != null)
+                body.Instructions.Add(ilHelper.SetField(destinationField));
+        }
+
+        private IEnumerable<Instruction> GetConversion(TypeReference sourceType, TypeReference destinationType, out VariableDefinition tempVar)
         {
             tempVar = null;
 
